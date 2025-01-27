@@ -8,13 +8,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = os.getenv("SECRET_KEY", default="secret-key")
-print(SECRET_KEY)
 
 DEBUG = True
 
 ALLOWED_HOSTS_ENV = os.getenv('ALLOWED_HOSTS', default='127.0.0.1, localhost')
 
 ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_ENV.split(',')]
+
+DOMAIN_NAME = os.getenv('DOMAIN_NAME', default='127.0.0.1')
+
+CSRF_TRUSTED_ORIGINS = [f'https://*.{DOMAIN_NAME}','https://*.127.0.0.1']
 
 
 
