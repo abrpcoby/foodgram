@@ -15,7 +15,7 @@ services:
       - pg_data:/var/lib/postgresql/data/
 
   backend:
-    image: abrpcoby/foodgram_backend
+    image: abrpc/foodgram_backend
     depends_on:
       - db
     env_file:
@@ -25,7 +25,7 @@ services:
       - media:/app/media
 
   frontend:
-    image: abrpcoby/foodgram_frontend
+    image: abrpc/foodgram_frontend
     command: cp -r /app/build/. /frontend_static/
     volumes:
       - static:/frontend_static
