@@ -147,7 +147,7 @@ class SpecialRecipeSerializer(ModelSerializer):
         read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscriptionsSerializer(CustomUserSerializer):
+class SubscriptionSerializer(CustomUserSerializer):
     recipes = SpecialRecipeSerializer(many=True, read_only=True)
     recipes_count = SerializerMethodField()
 
