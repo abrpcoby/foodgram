@@ -71,8 +71,7 @@ class RecipeSerializer(ModelSerializer):
         ingredients = recipe.ingredients.values(
             'id',
             'name',
-            'measurement_unit',
-            amount=F('recipes__amount'),)
+            'measurement_unit')
         return ingredients
 
     def get_is_favorited(self, obj):
