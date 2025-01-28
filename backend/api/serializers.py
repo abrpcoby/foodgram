@@ -44,7 +44,7 @@ class CustomUserSerializer(ModelSerializer):
 class CustomCreateUserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = ('email', 'username', 'first_name', 'last_name', 'password')
+        fields = ('email', 'username', 'first_name', 'password')
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -153,13 +153,14 @@ class SubscriptionSerializer(ModelSerializer):
     email = ReadOnlyField(source='author.email')
     username = ReadOnlyField(source='author.username')
     first_name = ReadOnlyField(source='author.first_name')
+    last_name = ReadOnlyField(source='author.last_name')
     is_subscribed = SerializerMethodField()
     recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name',
+        fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count')
         
 
