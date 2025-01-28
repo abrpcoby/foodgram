@@ -150,12 +150,10 @@ class SpecialRecipeSerializer(ModelSerializer):
 class SubscriptionSerializer(CustomUserSerializer):
     recipes = SpecialRecipeSerializer(many=True, read_only=True)
     recipes_count = SerializerMethodField()
-    email = SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                  'is_subscribed', 'recipes', 'recipes_count')
+        fields = ('id', 'is_subscribed', 'recipes', 'recipes_count')
 
     def validate(self, data):
         author = self.instance
