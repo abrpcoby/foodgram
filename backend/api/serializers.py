@@ -51,27 +51,9 @@ class CustomCreateUserSerializer(ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 
-class IngredientRecipeSerializer(ModelSerializer):
-    id = ReadOnlyField(
-        source='ingredient.id')
-    name = ReadOnlyField(
-        source='ingredient.name')
-    measurement_unit = ReadOnlyField(
-        source='ingredient.measurement_unit')
-
-    class Meta:
-        model = RecipeIngredient
-        fields = ('id', 'name', 'measurement_unit', 'amount')
-
-
 class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
     author = CustomUserSerializer(read_only=True)
-    ingredients = IngredientRecipeSerializer(
-        many=True,
-        source='recipe_ingredients',
-        read_only=True
-    )
     image = Base64ImageField()
     is_favorited = SerializerMethodField()
     is_in_shopping_cart = SerializerMethodField()
@@ -81,7 +63,16 @@ class RecipeSerializer(ModelSerializer):
         fields = ('id', 'tags', 'author', 'ingredients',
                   'is_favorited', 'is_in_shopping_cart',
                   'name', 'image', 'text', 'cooking_time')
-        read_only_fields = ('is_favorited', 'is_in_shopping_cart')
+        read_only_fields = ('is_favorited', 'is_in_shopping_cart',)
+
+    def get_ingredients(self, obj):
+        recipe = obj
+        ingredients = recipe.ingredients.values(
+            'id',
+            'name',
+            'measurement_unit',
+            amount=F('recipe__amount'))
+        return ingredients
 
     def get_is_favorited(self, obj):
         user = self.context.get('view').request.user
