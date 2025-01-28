@@ -23,7 +23,6 @@ from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 
 
 class RecipeViewSet(ModelViewSet):
-    """Вьюсет для модели рецепта."""
     queryset = Recipe.objects.all()
     pagination_class = Pagination
     permission_classes = (IsAuthorOrReadOnly | IsAdminOrReadOnly,)
