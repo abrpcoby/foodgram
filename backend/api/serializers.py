@@ -147,7 +147,7 @@ class SpecialRecipeSerializer(ModelSerializer):
         read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscriptionSerializer(CustomUserSerializer):
+class SubscriptionSerializer(ModelSerializer):
     recipes = SpecialRecipeSerializer(many=True, read_only=True)
     id = ReadOnlyField(source='author.id')
     email = ReadOnlyField(source='author.email')
