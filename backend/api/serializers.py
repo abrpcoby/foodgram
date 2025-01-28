@@ -2,7 +2,7 @@ from django.db import transaction
 from django.db.models import F
 
 from rest_framework.serializers import (ModelSerializer, 
-                                        SerializerMethodField, ReadOnlyField)
+                                        SerializerMethodField)
 from rest_framework.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 
@@ -150,6 +150,7 @@ class SpecialRecipeSerializer(ModelSerializer):
 class SubscriptionSerializer(CustomUserSerializer):
     recipes = SpecialRecipeSerializer(many=True, read_only=True)
     recipes_count = SerializerMethodField()
+    email = SerializerMethodField()
 
     class Meta:
         model = User
