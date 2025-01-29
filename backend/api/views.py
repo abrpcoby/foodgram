@@ -133,7 +133,7 @@ class CustomUserViewSet(UserViewSet):
             permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
-        subscribers = User.objects.filter(subscription__user=user)
+        subscribers = User.objects.filter(subscriptions__user=user)
         pages = self.paginate_queryset(subscribers)
         serializer = SubscriptionSerializer(
             pages,
