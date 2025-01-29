@@ -138,6 +138,15 @@ class RecipeSerializer(ModelSerializer):
         return instance
 
 
+class CropRecipeSerializer(ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ('id', 'name', 'image', 'cooking_time')
+
+
 class SpecialRecipeSerializer(ModelSerializer):
     image = Base64ImageField()
 
@@ -176,6 +185,14 @@ class SubscriptionSerializer(CustomUserSerializer):
                 'Нельзя подписаться на самого себя'
             )
         return data
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.GET.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj.author)
+        if limit:
+            queryset = queryset[:int(limit)]
+        return CropRecipeSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
