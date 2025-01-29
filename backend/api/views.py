@@ -104,10 +104,10 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     pagination_class = Pagination
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return CustomUserSerializer
-        return CustomCreateUserSerializer
+    # def get_serializer_class(self):
+    #     if self.request.method == 'GET':
+    #         return CustomUserSerializer
+    #     return CustomCreateUserSerializer
 
     # @action(detail=True,
     #         methods=['post', 'delete'],
