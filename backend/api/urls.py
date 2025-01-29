@@ -15,5 +15,6 @@ router.register('users', CustomUserViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router.urls), name='api-root'),
+    re_path('', include('djoser.urls')),
     re_path('auth/', include('djoser.urls.authtoken')),
 ]
