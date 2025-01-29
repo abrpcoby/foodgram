@@ -100,43 +100,43 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
 
 
-class CustomUserViewSet(UserViewSet):
-    queryset = User.objects.all()
-    pagination_class = Pagination
+# class CustomUserViewSet(UserViewSet):
+#     queryset = User.objects.all()
+#     pagination_class = Pagination
 
-    def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return CustomUserSerializer
-        return CustomCreateUserSerializer
+#     def get_serializer_class(self):
+#         if self.request.method == 'GET':
+#             return CustomUserSerializer
+#         return CustomCreateUserSerializer
 
-    @action(detail=True,
-            methods=['post', 'delete'],
-            permission_classes=[IsAuthenticated])
-    def subscribe(self, request, **kwargs):
-        author = get_object_or_404(User, id=self.kwargs.get('id'))
-        if request.method == 'POST':
-            serializer = SubscriptionSerializer(author,
-                                                data=request.data,
-                                                context={'request': request}
-                                                )
-            serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(user=request.user, author=author)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        subscription = get_object_or_404(Subscription,
-                                         user=request.user,
-                                         author=author)
-        subscription.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+#     @action(detail=True,
+#             methods=['post', 'delete'],
+#             permission_classes=[IsAuthenticated])
+#     def subscribe(self, request, **kwargs):
+#         author = get_object_or_404(User, id=self.kwargs.get('id'))
+#         if request.method == 'POST':
+#             serializer = SubscriptionSerializer(author,
+#                                                 data=request.data,
+#                                                 context={'request': request}
+#                                                 )
+#             serializer.is_valid(raise_exception=True)
+#             Subscription.objects.create(user=request.user, author=author)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         subscription = get_object_or_404(Subscription,
+#                                          user=request.user,
+#                                          author=author)
+#         subscription.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # @action(detail=False,
-    #         methods=['get'],
-    #         permission_classes=[IsAuthenticated])
-    # def subscriptions(self, request):
-    #     user = request.user
-    #     subscribers = User.objects.filter(subscribers__user=user)
-    #     pages = self.paginate_queryset(subscribers)
-    #     serializer = SubscriptionSerializer(
-    #         pages,
-    #         many=True,
-    #         context={'request': request})
-    #     return self.get_paginated_response(serializer.data)
+#     @action(detail=False,
+#             methods=['get'],
+#             permission_classes=[IsAuthenticated])
+#     def subscriptions(self, request):
+#         user = request.user
+#         subscribers = User.objects.filter(subscribers__user=user)
+#         pages = self.paginate_queryset(subscribers)
+#         serializer = SubscriptionSerializer(
+#             pages,
+#             many=True,
+#             context={'request': request})
+#         return self.get_paginated_response(serializer.data)
