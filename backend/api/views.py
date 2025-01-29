@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from djoser.views import UserViewSet
 
-from .filters import AuthorAndTagFilter
 from recipes.models import (Tag, Recipe, Ingredient, Favorite, ShoppingCart)
 from users.models import User, Subscription
 from .serializers import (TagSerializer,
@@ -28,15 +27,22 @@ class RecipeViewSet(ModelViewSet):
     pagination_class = Pagination
     permission_classes = (IsAuthorOrReadOnly | IsAdminOrReadOnly,)
     serializer_class = RecipeSerializer
-    filter_class = AuthorAndTagFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
     @action(detail=True,
-            methods=['post', 'delete'],
+            methods=['post', 'delete', 'get'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
+        if request.method == 'GET':
+            queryset = Recipe.objects.filter(favorites__user=request.user)
+            page = self.paginate_queryset(queryset)
+            if page is not None:
+                serializer = SpecialRecipeSerializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = SpecialRecipeSerializer(queryset, many=True)
+            return Response(serializer.data)
         if request.method == 'POST':
             recipe = get_object_or_404(Recipe, id=pk)
             Favorite.objects.create(user=request.user, recipe=recipe)
