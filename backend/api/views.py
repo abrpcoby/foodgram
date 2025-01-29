@@ -20,6 +20,7 @@ from .serializers import (TagSerializer,
                           RecipeSerializer)
 from .pagination import Pagination
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
+from .filters import RecipeFilter
 
 
 class RecipeViewSet(ModelViewSet):
@@ -27,22 +28,15 @@ class RecipeViewSet(ModelViewSet):
     pagination_class = Pagination
     permission_classes = (IsAuthorOrReadOnly | IsAdminOrReadOnly,)
     serializer_class = RecipeSerializer
+    filter_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
     @action(detail=True,
-            methods=['post', 'delete', 'get'],
+            methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
-        if request.method == 'GET':
-            queryset = Recipe.objects.filter(favorites__user=request.user)
-            page = self.paginate_queryset(queryset)
-            if page is not None:
-                serializer = SpecialRecipeSerializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-            serializer = SpecialRecipeSerializer(queryset, many=True)
-            return Response(serializer.data)
         if request.method == 'POST':
             recipe = get_object_or_404(Recipe, id=pk)
             Favorite.objects.create(user=request.user, recipe=recipe)
