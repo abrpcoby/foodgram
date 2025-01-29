@@ -158,12 +158,6 @@ class SpecialRecipeSerializer(ModelSerializer):
 
 class SubscriptionSerializer(CustomUserSerializer):
     recipes = SpecialRecipeSerializer(many=True, read_only=True)
-    id = ReadOnlyField(source='author.id')
-    email = ReadOnlyField(source='author.email')
-    username = ReadOnlyField(source='author.username')
-    first_name = ReadOnlyField(source='author.first_name')
-    last_name = ReadOnlyField(source='author.last_name')
-    is_subscribed = SerializerMethodField()
     recipes_count = SerializerMethodField()
 
     class Meta:
