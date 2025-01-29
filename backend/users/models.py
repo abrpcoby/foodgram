@@ -51,9 +51,9 @@ class Subscription(models.Model):
         verbose_name='Автор')
 
     class Meta:
+        ordering = ['-id']
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'author'], name='subscriptions_unique')]
-
-    def __str__(self):
-        return f'Подписка {self.user} на {self.author}'
