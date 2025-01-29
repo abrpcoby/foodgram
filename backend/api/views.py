@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from djoser.views import UserViewSet
 
+from .filters import AuthorAndTagFilter
 from recipes.models import (Tag, Recipe, Ingredient, Favorite, ShoppingCart)
 from users.models import User, Subscription
 from .serializers import (TagSerializer,
@@ -27,6 +28,7 @@ class RecipeViewSet(ModelViewSet):
     pagination_class = Pagination
     permission_classes = (IsAuthorOrReadOnly | IsAdminOrReadOnly,)
     serializer_class = RecipeSerializer
+    filter_class = AuthorAndTagFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
