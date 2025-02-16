@@ -7,7 +7,7 @@ MAX_LENGTH_CHAR_FIELD = 150
 class User(AbstractUser):
     REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
     username = models.CharField(
-        max_length=MAX_LENGTH_CHAR_FIELD, 
+        max_length=MAX_LENGTH_CHAR_FIELD,
         unique=True,
         verbose_name='Логин'
     )
@@ -16,7 +16,7 @@ class User(AbstractUser):
         null=True, default=''
     )
     email = models.EmailField(
-        max_length=256, 
+        max_length=256,
         unique=True,
         verbose_name='Электронная почта'
     )

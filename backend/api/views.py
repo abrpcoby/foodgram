@@ -68,9 +68,8 @@ class RecipeViewSet(ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True,
-            methods=['get'], 
-            url_path='get-link',
-    )
+            methods=['get'],
+            url_path='get-link')
     def get_link(self, request, pk):
         get_object_or_404(self.get_queryset(), pk=pk)
         return Response({
@@ -127,7 +126,7 @@ class CustomUserViewSet(UserViewSet):
         if self.action == 'me':
             self.permission_classes = (IsAuthenticated,)
         return super().get_permissions()
-    
+
     @action(
         ['put', 'delete'], detail=False, url_path='me/avatar',
         permission_classes=[CurrentUserOrAdmin]
@@ -166,7 +165,9 @@ class CustomUserViewSet(UserViewSet):
         author = self.get_object()
         if request.method == 'POST':
             if request.user == author:
-                raise serializers.ValidationError("Нельзя подписаться на самого себя.")
+                raise serializers.ValidationError(
+                    "Нельзя подписаться на самого себя."
+                )
             _, created = Subscription.objects.get_or_create(
                 user=request.user, author=author
             )

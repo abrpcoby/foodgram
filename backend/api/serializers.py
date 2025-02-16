@@ -1,8 +1,7 @@
 from django.db import transaction
 from django.db.models import F
 
-from rest_framework.serializers import (ModelSerializer, 
-                                        SerializerMethodField, ReadOnlyField)
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 
@@ -172,7 +171,6 @@ class SubscriptionSerializer(CustomUserSerializer):
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
                   'is_subscribed', 'recipes', 'recipes_count', 'avatar')
-        
 
     def validate(self, data):
         author = self.instance
