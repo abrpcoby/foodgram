@@ -11,6 +11,10 @@ class User(AbstractUser):
         unique=True,
         verbose_name='Логин'
     )
+    avatar = models.ImageField(
+        upload_to='users/avatars/', verbose_name='Аватар',
+        null=True, default=''
+    )
     email = models.EmailField(
         max_length=256, 
         unique=True,
@@ -28,6 +32,9 @@ class User(AbstractUser):
         max_length=MAX_LENGTH_CHAR_FIELD,
         verbose_name='Фамилия'
     )
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'Пользователь'

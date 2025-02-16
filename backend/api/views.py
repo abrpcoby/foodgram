@@ -1,13 +1,15 @@
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 from django.db.models import Sum
-
-from rest_framework import status
+from django.urls import reverse
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, serializers
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from djoser.views import UserViewSet
+from djoser.permissions import CurrentUserOrAdmin
 
 from recipes.models import (Tag, Recipe, Ingredient, Favorite, ShoppingCart)
 from users.models import User, Subscription
@@ -17,18 +19,17 @@ from .serializers import (TagSerializer,
                           CustomUserSerializer,
                           CustomCreateUserSerializer,
                           SubscriptionSerializer,
-                          RecipeSerializer)
-from .pagination import Pagination
+                          RecipeSerializer, UserAvatarSerializer)
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import RecipeFilter
 
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    pagination_class = Pagination
     permission_classes = (IsAuthorOrReadOnly | IsAdminOrReadOnly,)
     serializer_class = RecipeSerializer
-    filter_class = RecipeFilter
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -66,6 +67,18 @@ class RecipeViewSet(ModelViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True,
+            methods=['get'], 
+            url_path='get-link',
+    )
+    def get_link(self, request, pk):
+        get_object_or_404(self.get_queryset(), pk=pk)
+        return Response({
+            'short-link': request.build_absolute_uri(
+                reverse('short-link', args=(pk,))
+            )
+        })
+
     @action(detail=False,
             methods=['get'],
             permission_classes=[IsAuthenticated])
@@ -94,48 +107,49 @@ class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = None
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = None
 
 
 class CustomUserViewSet(UserViewSet):
-    queryset = User.objects.all()
-    pagination_class = Pagination
-
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return CustomUserSerializer
         return CustomCreateUserSerializer
 
-    @action(detail=True,
-            methods=['post', 'delete'],
-            permission_classes=[IsAuthenticated])
-    def subscribe(self, request, **kwargs):
-        author = get_object_or_404(User, id=self.kwargs.get('id'))
-        if request.method == 'POST':
-            serializer = SubscriptionSerializer(author,
-                                                data=request.data,
-                                                context={'request': request}
-                                                )
+    def get_permissions(self):
+        if self.action == 'me':
+            self.permission_classes = (IsAuthenticated,)
+        return super().get_permissions()
+    
+    @action(
+        ['put', 'delete'], detail=False, url_path='me/avatar',
+        permission_classes=[CurrentUserOrAdmin]
+    )
+    def me_avatar(self, request):
+        user = request.user
+        if request.method == 'PUT':
+            serializer = UserAvatarSerializer(user, data=request.data)
             serializer.is_valid(raise_exception=True)
-            Subscription.objects.create(user=request.user, author=author)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        subscription = get_object_or_404(Subscription,
-                                         user=request.user,
-                                         author=author)
-        subscription.delete()
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        user.avatar.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False,
-            methods=['get'],
-            permission_classes=[IsAuthenticated])
+    @action(
+        ['get'], detail=False,
+        permission_classes=[IsAuthenticated]
+    )
     def subscriptions(self, request):
-        user = request.user
-        subscribers = User.objects.filter(subscribers__user=user)
+        subscribers = User.objects.filter(
+            subscribers__user=request.user
+        )
         pages = self.paginate_queryset(subscribers)
         serializer = SubscriptionSerializer(
             pages,
@@ -144,3 +158,27 @@ class CustomUserViewSet(UserViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
+    @action(
+        ['post', 'delete'], detail=True, url_path='subscribe',
+        permission_classes=[IsAuthenticated]
+    )
+    def create_delete_subscribe(self, request, id=None):
+        author = self.get_object()
+        if request.method == 'POST':
+            if request.user == author:
+                raise serializers.ValidationError("Нельзя подписаться на самого себя.")
+            _, created = Subscription.objects.get_or_create(
+                user=request.user, author=author
+            )
+            if not created:
+                raise serializers.ValidationError(
+                    {'subscribe': f'Вы уже подписаны на "{author}"'}
+                )
+            subscribing_data = SubscriptionSerializer(
+                author, context={'request': request}
+            ).data
+            return Response(subscribing_data, status=status.HTTP_201_CREATED)
+        get_object_or_404(
+            Subscription, user=request.user, author=author
+        ).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

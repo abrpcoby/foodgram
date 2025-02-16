@@ -30,7 +30,7 @@ class CustomUserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'is_subscribed', 'password')
+                  'last_name', 'is_subscribed', 'password', 'avatar')
         read_only_fields = ('is_subscribed',)
         extra_kwargs = {'password': {'write_only': True}}
 
@@ -49,6 +49,14 @@ class CustomCreateUserSerializer(ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+class UserAvatarSerializer(ModelSerializer):
+    avatar = Base64ImageField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('avatar',)
 
 
 class RecipeSerializer(ModelSerializer):
@@ -163,7 +171,7 @@ class SubscriptionSerializer(CustomUserSerializer):
     class Meta:
         model = User
         fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                  'is_subscribed', 'recipes', 'recipes_count')
+                  'is_subscribed', 'recipes', 'recipes_count', 'avatar')
         
 
     def validate(self, data):
