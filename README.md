@@ -51,18 +51,11 @@ cd foodgram
 docker compose up -d
 ```
 
-**Выполните миграции и передайте статику с бэкэнда**
-
-```bash
-docker compose exec backend python manage.py migrate
-docker compose exec backend python manage.py collectstatic
-```
-
 **Загрузите фикстуры**
 
 ```bash
-docker compose exec backend python manage.py import_ingredients recipes/data/ingredients.json
-docker compose exec backend python manage.py import_tags recipes/data/tags.json
+docker compose -f docker-compose.yml exec backend python manage.py import_ingredients recipes/data/ingredients.json
+docker compose -f docker-compose.yml exec backend python manage.py import_tags recipes/data/tags.json
 ```
 
 **Cоздайте суперпользователя**
