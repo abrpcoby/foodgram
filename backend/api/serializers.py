@@ -12,8 +12,8 @@ from users.models import User, Subscription
 class TagSerializer(ModelSerializer):
     class Meta:
         model = Tag
-        fields = ('id', 'name', 'color', 'slug')
-        read_only_fields = ('id', 'name', 'color', 'slug')
+        fields = ('id', 'name', 'slug')
+        read_only_fields = ('id', 'name', 'slug')
 
 
 class IngredientSerializer(ModelSerializer):
