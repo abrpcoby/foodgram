@@ -21,7 +21,7 @@ from .serializers import (TagSerializer,
                           SubscriptionSerializer,
                           RecipeSerializer, UserAvatarSerializer)
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
-from .filters import RecipeFilter
+from .filters import NameFilter, RecipeFilter
 
 
 class RecipeViewSet(ModelViewSet):
@@ -113,6 +113,8 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = DjangoFilterBackend,
+    filterset_class = NameFilter
     pagination_class = None
 
 

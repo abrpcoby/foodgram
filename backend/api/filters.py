@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
-from django_filters.rest_framework import FilterSet, filters
-from recipes.models import Recipe, Tag
+from django_filters.rest_framework import FilterSet, filters, CharFilter
+from recipes.models import Ingredient, Recipe, Tag
 
 User = get_user_model()
 
@@ -33,3 +33,13 @@ class RecipeFilter(FilterSet):
         if value and not user.is_anonymous:
             return queryset.filter(shopping_cart__user=user)
         return queryset
+
+
+class NameFilter(FilterSet):
+    name = CharFilter(
+        field_name='name', lookup_expr='startswith'
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = 'name',
