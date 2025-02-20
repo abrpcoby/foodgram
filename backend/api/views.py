@@ -56,7 +56,7 @@ class RecipeViewSet(ModelViewSet):
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        if ShoppingCart.objects.filter(user=request.user, 
+        if ShoppingCart.objects.filter(user=request.user,
                                        recipe=recipe).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
         ShoppingCart.objects.create(user=request.user, recipe=recipe)
