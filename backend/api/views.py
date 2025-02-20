@@ -42,7 +42,7 @@ class RecipeViewSet(ModelViewSet):
         Favorite.objects.create(user=request.user, recipe=recipe)
         serializer = SpecialRecipeSerializer(recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         favorite = Favorite.objects.filter(user=request.user, recipe__id=pk)
@@ -56,8 +56,8 @@ class RecipeViewSet(ModelViewSet):
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        if ShoppingCart.objects.filter(user=request.user,
-                                        recipe=recipe).exists():
+        if ShoppingCart.objects.filter(user=request.user, 
+                                       recipe=recipe).exists():
             return Response(status=status.HTTP_400_BAD_REQUEST)
         ShoppingCart.objects.create(user=request.user, recipe=recipe)
         serializer = SpecialRecipeSerializer(recipe)
@@ -187,7 +187,7 @@ class FoodgramUserViewSet(UserViewSet):
             author, context={'request': request}
         ).data
         return Response(subscribing_data, status=status.HTTP_201_CREATED)
-    
+
     @subscribe.mapping.delete
     def delete_subscribe(self, request, id=None):
         author = self.get_object()

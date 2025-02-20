@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 
 from recipes.models import Tag, Recipe, Ingredient, RecipeIngredient
-from users.models import User, Subscription
+from users.models import User
 
 
 class TagSerializer(ModelSerializer):
