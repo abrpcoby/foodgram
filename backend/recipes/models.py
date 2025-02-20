@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinValueValidator
 
 from users.models import User
+from django.core.validators import MaxValueValidator
 
 
 MAX_LENGTH_CHAR_FIELD = 200
@@ -51,19 +52,16 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='recipes',
         verbose_name='Автор рецепта'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         through='RecipeIngredient',
-        related_name='recipes',
         verbose_name='Ингредиенты'
     )
     tags = models.ManyToManyField(
         Tag,
         through='RecipeTag',
-        related_name='recipes',
         verbose_name='Теги'
     )
     name = models.CharField(
@@ -79,7 +77,10 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveIntegerField(
         verbose_name='Время приготовления (минут)',
-        validators=[MinValueValidator(1)]
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(1800)
+        ]
     )
     pub_date = models.DateTimeField(
         auto_now_add=True,
@@ -90,6 +91,7 @@ class Recipe(models.Model):
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date',)
+        default_related_name = 'recipes'
 
     def __str__(self):
         return self.name

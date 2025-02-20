@@ -124,8 +124,8 @@ AUTH_USER_MODEL = 'users.User'
 
 DJOSER = {
     'SERIALIZERS': {
-        'user': 'api.serializers.CustomUserSerializer',
-        'current_user': 'api.serializers.CustomUserSerializer',
+        'user': 'api.serializers.FoodgramUserSerializer',
+        'current_user': 'api.serializers.FoodgramUserSerializer',
     },
     'HIDE_USERS': False,
     'PERMISSIONS': {

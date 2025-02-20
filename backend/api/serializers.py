@@ -23,7 +23,7 @@ class IngredientSerializer(ModelSerializer):
         read_only_fields = ('id', 'name', 'measurement_unit')
 
 
-class CustomUserSerializer(ModelSerializer):
+class FoodgramUserSerializer(ModelSerializer):
     is_subscribed = SerializerMethodField()
 
     class Meta:
@@ -40,7 +40,7 @@ class CustomUserSerializer(ModelSerializer):
         return False
 
 
-class CustomCreateUserSerializer(ModelSerializer):
+class FoodgramCreateUserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ('email', 'username', 'first_name', 'last_name', 'password')
@@ -60,7 +60,7 @@ class UserAvatarSerializer(ModelSerializer):
 
 class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(read_only=True, many=True)
-    author = CustomUserSerializer(read_only=True)
+    author = FoodgramUserSerializer(read_only=True)
     ingredients = SerializerMethodField()
     image = Base64ImageField()
     is_favorited = SerializerMethodField()
@@ -163,7 +163,7 @@ class SpecialRecipeSerializer(ModelSerializer):
         read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class SubscriptionSerializer(CustomUserSerializer):
+class SubscriptionSerializer(FoodgramUserSerializer):
     recipes = SpecialRecipeSerializer(many=True, read_only=True)
     recipes_count = SerializerMethodField()
 
@@ -175,7 +175,7 @@ class SubscriptionSerializer(CustomUserSerializer):
     def validate(self, data):
         author = self.instance
         user = self.context.get('request').user
-        if Subscription.objects.filter(user=user, author=author).exists():
+        if user.subscriptions.filter(author=author).exists():
             raise ValidationError(
                 'Нельзя подписаться на автора дважды'
             )

@@ -16,8 +16,8 @@ from users.models import User, Subscription
 from .serializers import (TagSerializer,
                           SpecialRecipeSerializer,
                           IngredientSerializer,
-                          CustomUserSerializer,
-                          CustomCreateUserSerializer,
+                          FoodgramUserSerializer,
+                          FoodgramCreateUserSerializer,
                           SubscriptionSerializer,
                           RecipeSerializer, UserAvatarSerializer)
 from .permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
@@ -35,14 +35,16 @@ class RecipeViewSet(ModelViewSet):
         serializer.save(author=self.request.user)
 
     @action(detail=True,
-            methods=['post', 'delete'],
+            methods=['post'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, pk):
-        if request.method == 'POST':
-            recipe = get_object_or_404(Recipe, id=pk)
-            Favorite.objects.create(user=request.user, recipe=recipe)
-            serializer = SpecialRecipeSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        recipe = get_object_or_404(Recipe, id=pk)
+        Favorite.objects.create(user=request.user, recipe=recipe)
+        serializer = SpecialRecipeSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @favorite.mapping.delete
+    def delete_favorite(self, request, pk):
         favorite = Favorite.objects.filter(user=request.user, recipe__id=pk)
         if favorite.exists():
             favorite.delete()
@@ -50,17 +52,19 @@ class RecipeViewSet(ModelViewSet):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True,
-            methods=['post', 'delete'],
+            methods=['post'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk):
-        if request.method == 'POST':
-            recipe = get_object_or_404(Recipe, id=pk)
-            if ShoppingCart.objects.filter(user=request.user,
-                                           recipe=recipe).exists():
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            ShoppingCart.objects.create(user=request.user, recipe=recipe)
-            serializer = SpecialRecipeSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        recipe = get_object_or_404(Recipe, id=pk)
+        if ShoppingCart.objects.filter(user=request.user,
+                                        recipe=recipe).exists():
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        ShoppingCart.objects.create(user=request.user, recipe=recipe)
+        serializer = SpecialRecipeSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @shopping_cart.mapping.delete
+    def delete_shopping_cart(self, request, pk):
         cart = ShoppingCart.objects.filter(user=request.user, recipe__id=pk)
         if cart.exists():
             cart.delete()
@@ -118,11 +122,11 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     pagination_class = None
 
 
-class CustomUserViewSet(UserViewSet):
+class FoodgramUserViewSet(UserViewSet):
     def get_serializer_class(self):
         if self.request.method == 'GET':
-            return CustomUserSerializer
-        return CustomCreateUserSerializer
+            return FoodgramUserSerializer
+        return FoodgramCreateUserSerializer
 
     def get_permissions(self):
         if self.action == 'me':
@@ -130,16 +134,19 @@ class CustomUserViewSet(UserViewSet):
         return super().get_permissions()
 
     @action(
-        ['put', 'delete'], detail=False, url_path='me/avatar',
+        ['put'], detail=False, url_path='me/avatar',
         permission_classes=[CurrentUserOrAdmin]
     )
     def me_avatar(self, request):
         user = request.user
-        if request.method == 'PUT':
-            serializer = UserAvatarSerializer(user, data=request.data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+        serializer = UserAvatarSerializer(user, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @me_avatar.mapping.delete
+    def delete_avatar(self, request):
+        user = request.user
         user.avatar.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -160,27 +167,30 @@ class CustomUserViewSet(UserViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(
-        ['post', 'delete'], detail=True, url_path='subscribe',
+        ['post'], detail=True, url_path='subscribe',
         permission_classes=[IsAuthenticated]
     )
-    def create_delete_subscribe(self, request, id=None):
+    def subscribe(self, request, id=None):
         author = self.get_object()
-        if request.method == 'POST':
-            if request.user == author:
-                raise serializers.ValidationError(
-                    "Нельзя подписаться на самого себя."
-                )
-            _, created = Subscription.objects.get_or_create(
-                user=request.user, author=author
+        if request.user == author:
+            raise serializers.ValidationError(
+                "Нельзя подписаться на самого себя."
             )
-            if not created:
-                raise serializers.ValidationError(
-                    {'subscribe': f'Вы уже подписаны на "{author}"'}
-                )
-            subscribing_data = SubscriptionSerializer(
-                author, context={'request': request}
-            ).data
-            return Response(subscribing_data, status=status.HTTP_201_CREATED)
+        _, created = Subscription.objects.get_or_create(
+            user=request.user, author=author
+        )
+        if not created:
+            raise serializers.ValidationError(
+                {'subscribe': f'Вы уже подписаны на "{author}"'}
+            )
+        subscribing_data = SubscriptionSerializer(
+            author, context={'request': request}
+        ).data
+        return Response(subscribing_data, status=status.HTTP_201_CREATED)
+    
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, id=None):
+        author = self.get_object()
         get_object_or_404(
             Subscription, user=request.user, author=author
         ).delete()

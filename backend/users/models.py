@@ -60,7 +60,12 @@ class Subscription(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'author'], name='subscriptions_unique')]
+                fields=['user', 'author'], name='subscriptions_unique'),
+            models.CheckConstraint(
+                check=~models.Q(author=models.F("user")), 
+                name="no_self_subscription"
+            ),
+        ]
 
     def __str__(self):
         return f'Подписка {self.user} на {self.author}'
