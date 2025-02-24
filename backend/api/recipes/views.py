@@ -9,9 +9,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-from recipes.models import (Tag, Recipe, Ingredient, Favorite, ShoppingCart,
-                            Recipe)
-from .serializers import (TagSerializer, RecipeSerializer, 
+from recipes.models import Tag, Recipe, Ingredient, Favorite, ShoppingCart
+from .serializers import (TagSerializer, RecipeSerializer,
                           IngredientSerializer, SpecialRecipeSerializer)
 from ..permissions import IsAdminOrReadOnly, IsAuthorOrReadOnly
 from .filters import NameFilter, RecipeFilter

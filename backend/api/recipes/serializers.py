@@ -5,7 +5,7 @@ from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 
-from ..users.serializers import (FoodgramUserSerializer, 
+from ..users.serializers import (FoodgramUserSerializer,
                                  SubscriptionSerializer as UserSubSerializer)
 from recipes.models import Tag, Recipe, Ingredient, RecipeIngredient
 
@@ -129,8 +129,8 @@ class RecipeSerializer(ModelSerializer):
         return instance
 
 
+# Override to avoid circular import
 class SubscriptionSerializer(UserSubSerializer):
-    ### Override to avoid circular import ###
     recipes = SpecialRecipeSerializer(many=True, read_only=True)
 
     def get_recipes(self, obj):
