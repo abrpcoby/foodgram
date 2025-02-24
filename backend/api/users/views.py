@@ -10,7 +10,7 @@ from users.models import User, Subscription
 from .serializers import (FoodgramUserSerializer,
                           FoodgramCreateUserSerializer,
                           UserAvatarSerializer)
-from ..serializers import SubscriptionSerializer
+from ..recipes.serializers import SubscriptionSerializer
 
 
 class FoodgramUserViewSet(UserViewSet):

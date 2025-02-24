@@ -5,9 +5,27 @@ from rest_framework.serializers import ModelSerializer, SerializerMethodField
 from rest_framework.exceptions import ValidationError
 from drf_extra_fields.fields import Base64ImageField
 
-from .users.serializers import FoodgramUserSerializer
+from ..users.serializers import (FoodgramUserSerializer, 
+                                 SubscriptionSerializer as UserSubSerializer)
 from recipes.models import Tag, Recipe, Ingredient, RecipeIngredient
-from users.models import User
+
+
+class CropRecipeSerializer(ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class SpecialRecipeSerializer(ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+        read_only_fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class TagSerializer(ModelSerializer):
@@ -111,45 +129,9 @@ class RecipeSerializer(ModelSerializer):
         return instance
 
 
-class CropRecipeSerializer(ModelSerializer):
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
-        read_only_fields = ('id', 'name', 'image', 'cooking_time')
-
-
-class SpecialRecipeSerializer(ModelSerializer):
-    image = Base64ImageField()
-
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
-        read_only_fields = ('id', 'name', 'image', 'cooking_time')
-
-
-class SubscriptionSerializer(FoodgramUserSerializer):
+class SubscriptionSerializer(UserSubSerializer):
+    ### Override to avoid circular import ###
     recipes = SpecialRecipeSerializer(many=True, read_only=True)
-    recipes_count = SerializerMethodField()
-
-    class Meta:
-        model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name',
-                  'is_subscribed', 'recipes', 'recipes_count', 'avatar')
-
-    def validate(self, data):
-        author = self.instance
-        user = self.context.get('request').user
-        if user.subscriptions.filter(author=author).exists():
-            raise ValidationError(
-                'Нельзя подписаться на автора дважды'
-            )
-        if user == author:
-            raise ValidationError(
-                'Нельзя подписаться на самого себя'
-            )
-        return data
 
     def get_recipes(self, obj):
         request = self.context.get('request')
@@ -158,6 +140,3 @@ class SubscriptionSerializer(FoodgramUserSerializer):
         if limit:
             queryset = queryset[:int(limit)]
         return CropRecipeSerializer(queryset, many=True).data
-
-    def get_recipes_count(self, obj):
-        return obj.recipes.count()
