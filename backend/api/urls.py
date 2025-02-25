@@ -15,6 +15,7 @@ router.register('users', FoodgramUserViewSet, basename='users')
 
 
 urlpatterns = [
+    # Если ввести версионирование, то запросы с фронтенда будут идти не туда
     path('', include(router.urls), name='api-root'),
     re_path('', include('djoser.urls')),
     re_path('auth/', include('djoser.urls.authtoken')),
